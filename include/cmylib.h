@@ -611,8 +611,8 @@ extern "C" {
  * @brief A non-owning view over a character buffer.
  */
 typedef struct string_t {
-	const char *data; /**< Pointer to the character data (not null-terminated). */
-	size_t len;       /**< Length of the view in bytes. */
+	char *data; /**< Pointer to the character data (not null-terminated). */
+	size_t len; /**< Length of the view in bytes. */
 } string_t;
 
 /** @def string_ends_with(self, other)
@@ -655,7 +655,7 @@ typedef struct string_t {
 /** @brief Create a `string_t` view from a null-terminated C string.
  *  @param chs  The source C string (not copied).
  *  @return A `string_t` pointing into `chs` with `len == strlen(chs)`. */
-MY_STRING_DEF string_t string_from_chars(const char *chs);
+MY_STRING_DEF string_t string_from_chars(char *chs);
 
 /** @brief Compare a `string_t` with a C string.
  *  @param self   Pointer to a `string_t`.
@@ -728,7 +728,7 @@ MY_STRING_DEF void string_rtrim(string_t *self);
 extern "C" {
 #endif /* __cplusplus */
 
-MY_STRING_DEF string_t string_from_chars(const char *chs)
+MY_STRING_DEF string_t string_from_chars(char *chs)
 {
 	string_t result = {0};
 	result.data = chs;
@@ -1528,7 +1528,7 @@ static int format_string(
 
 	fmt_info = parse_format_info(&mod, args);
 	width = fmt_info.width;
-	input_len = fmt_info.len ? fmt_info.len : (int)strlen(str);
+	input_len = fmt_info.has_len ? fmt_info.len : (int)strlen(str);
 	padding_char = fmt_info.zero_padded ? "0" : " ";
 	if (fmt_info.alternate_form) {
 		int i;
@@ -4776,6 +4776,14 @@ MY_SB_DEF string_view_t sb_build_view(string_builder_t *self);
  *  @note `setup_io_stream()` must be called before using this function. */
 MY_SB_DEF string_builder_t sb_format(allocator_t allocator, const char *  fmt, ...);
 
+/** @brief Create a string builder from a printf-style format string.
+ *  @param allocator  The allocator to use.
+ *  @param fmt        Printf-style format string.
+ *  @param args       Format arguments.
+ *  @return A new `string_builder_t` containing the formatted output.
+ *  @note `setup_io_stream()` must be called before using this function. */
+MY_SB_DEF string_builder_t sb_vformat(allocator_t allocator, const char *  fmt, va_list args);
+
 /** @brief Free the string builder's buffer and reset its fields.
  *  @param self  Pointer to the string builder. */
 MY_SB_DEF void sb_delete(string_builder_t *  self);
@@ -4824,6 +4832,7 @@ MY_SB_DEF void sb_push_string(string_builder_t *  self, const string_builder_t *
 #endif /* !MY_STRING_BUILDER_H_ */
 
 #if defined(CMYLIB_IMPL) || defined(MY_STRING_BUILDER_IMPL)
+#include <stdarg.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -4915,6 +4924,26 @@ MY_SB_DEF string_builder_t sb_format(allocator_t allocator, const char *  fmt, .
 	result.len = len;
 	return result;
 }
+
+MY_SB_DEF string_builder_t sb_vformat(allocator_t allocator, const char *  fmt, va_list args)
+{
+	int len = 0;
+	string_builder_t result = {0};
+
+	va_list clone;
+	va_copy(clone, args);
+
+	len = vsnsprint(NULL, 0, fmt, args);
+
+	result = sb_new(allocator, len);
+
+	vsnsprint(result.data, len + 1, fmt, clone);
+	va_end(clone);
+
+	result.len = len;
+	return result;
+}
+
 
 MY_SB_DEF void sb_reserve(string_builder_t *  self, size_t new_cap)
 {

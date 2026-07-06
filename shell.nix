@@ -2,13 +2,21 @@
 
 pkgs.mkShell.override { stdenv = pkgs.clangStdenv; }
 {
-  nativeBuildInputs = with pkgs; [
-    clang
+  nativeBuildInputs = with pkgs; [];
+  packages = with pkgs; [
     clang-tools
+    pkg-config
+    gf
   ];
+
   buildInputs = with pkgs; [
     glibc
     glibc.static
+    ncurses
     llvm
   ];
+
+  shellHook = ''
+    export CLINK_FLAGS=$(pkg-config --cflags --libs ncurses)
+  '';
 }

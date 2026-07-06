@@ -22,24 +22,42 @@ int main(int argc, char **argv)
 
 	StartBuildEx(argc, argv);
 	{
+		StringBuilder flags = SBCreate(mate_state.arena);
+		SBAddF(&flags, "%s -Wno-unused-command-line-argument", getenv("CLINK_FLAGS"));
+
 		Executable exe = CreateExecutable((ExecutableOptions) {
 			.output = OUTPUT_TARGET,
 			.warnings = is_release_build ? FLAG_WARNINGS_NONE : FLAG_WARNINGS_VERBOSE,
 			.debug = is_release_build ? 0 : FLAG_DEBUG,
-			.optimization = is_release_build ? FLAG_OPTIMIZATION_AGGRESSIVE : FLAG_OPTIMIZATION_NONE,
+			.optimization = is_release_build ? FLAG_OPTIMIZATION_AGGRESSIVE : 0,
 			.std = FLAG_STD_C11,
 			.sanitizer = is_release_build ? 0 : FLAG_SANITIZER,
+			.flags = flags.buffer.data,
 		});
 
 		AddFile(exe, "./source/*.c");
 
-		AddIncludePaths(exe, INCLUDE_DIR);
+		AddIncludePaths(exe, INCLUDE_DIR, SOURCE_DIR);
 
 		InstallExecutable(exe);
 		CreateCompileCommands(exe);
 
 		if (run) {
-			int result = RunCommand(exe.outputPath);
+			StringBuilder sb = SBCreate(mate_state.arena);
+			SBAddS(&sb, "ASAN_OPTIONS=log_path=./asan.log ");
+			SBAdd(&sb, exe.outputPath);
+			bool reached_dashes = false;
+			for (size_t i=0; i < (size_t)argc; i += 1) {
+				const char *arg = argv[i];
+				if (strcmp(arg, "--") == 0) {
+					reached_dashes = true;
+					continue;
+				}
+				if (reached_dashes) {
+					SBAddF(&sb, " %s", arg);
+				}
+			}
+			int result = RunCommand(sb.buffer);
 			fprintf(stderr, "Exited with %d\n", result);
 		}
 	}

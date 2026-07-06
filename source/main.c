@@ -1,48 +1,55 @@
-#include <ctype.h>
-#include <termios.h>
-#include <unistd.h>
 #include <stdio.h>
-
+#include <ncurses.h>
+#include "common.h"
 #include "cmylib.h"
+#include "input.h"
+#include "output.h"
 
-struct termios g_original_termios = {0};
+static int format_string_view(stream_t stream, modifier_stream_t mod, va_list args);
+static int format_string_builder(stream_t stream, modifier_stream_t mod, va_list args);
+static int format_string_t(stream_t stream, modifier_stream_t mod, va_list args);
 
-static void disable_raw_mode(void)
-{
-	tcsetattr(STDIN_FILENO, TCSAFLUSH, &g_original_termios);
-}
-
-static void enable_raw_mode(void)
-{
-	tcgetattr(STDIN_FILENO, &g_original_termios);
-	atexit(disable_raw_mode);
-
-	struct termios raw = g_original_termios;
-  raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
-  raw.c_oflag &= ~(OPOST);
-  raw.c_cflag |= (CS8);
-  raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
-	raw.c_cc[VMIN] = 0;
-	raw.c_cc[VTIME] = 1;
-
-	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
-}
-
-int main(void)
+int main(int argc, char **argv)
 {
 	setup_io_stream();
-	enable_raw_mode();
+	define_format_specifier("sv", format_string_view);
+	define_format_specifier("sb", format_string_builder);
+	define_format_specifier("str", format_string_t);
+
+	set_default_allocator(get_c_allocator());
+
+	init_editor();
+	if (argc >= 2) {
+		editor_open_file(argv[1]);
+	}
+
+	editor_set_message(string_from_chars("HELP: Ctrl-Q = quit"));
 
 	while (true) {
-		char c = '\0';
-		sread(stin, &c, 1, 1);
-		if (iscntrl(c)) {
-			println("{d}\r", c);
-		} else {
-			println("{d} ({c})\r", c, c);
-		}
-		if (c == 'q') break;
+		editor_refresh_screen();
+		editor_process_key_press();
 	}
 
 	return 0;
+}
+
+static int format_string_view(stream_t stream, modifier_stream_t mod, va_list args)
+{
+	(void)mod;
+	const string_view_t sv = va_arg(args, string_view_t);
+	return sprint(stream, "{s:*}", sv.data, (int)sv.len);
+}
+
+static int format_string_builder(stream_t stream, modifier_stream_t mod, va_list args)
+{
+	(void)mod;
+	const string_builder_t sv = va_arg(args, string_builder_t);
+	return sprint(stream, "{s:*}", sv.data, (int)sv.len);
+}
+
+static int format_string_t(stream_t stream, modifier_stream_t mod, va_list args)
+{
+	(void)mod;
+	const string_t sv = va_arg(args, string_t);
+	return sprint(stream, "{s:*}", sv.data, (int)sv.len);
 }
