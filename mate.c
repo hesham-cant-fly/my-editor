@@ -5,6 +5,9 @@
 #define INCLUDE_DIR "include/"
 #define SOURCE_DIR "source/"
 
+// act like you didn't see this
+// (setq org-download-image-dir (expand-file-name "./assets/"))
+
 int main(int argc, char **argv)
 {
 	bool run = false;
