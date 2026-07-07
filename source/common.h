@@ -13,7 +13,7 @@
 #include <termios.h>
 #include "cmylib.h"
 
-#define EDITOR_VERSION "0.0.67"
+#define EDITOR_VERSION "6.7.2026"
 
 typedef struct row_t {
 	string_t chars;

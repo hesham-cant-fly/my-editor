@@ -7,7 +7,7 @@ I'm following [[https://viewsourcecode.org/snaptoken/kilo/][this booklet]] as a 
 You might notice that the code in this repo is kinda different from what is in the booklet. Its just because I just code in my own style. also just mixing up =int= and =size_t= for no reason. I'm aware that its not a good thing but I'm too lazy to fix it :P
 
 * Screen Shots
-** First Screen Shot (6/7/26)
+** First Screen Shot (6/7/2026)
 [[file:assets/Screen_Shots/2026-07-06_17-41-51_screenshot.png]]
 
 * Building 
@@ -20,3 +20,8 @@ after that you can find a =my-editor= executable in =build=
 
 * Contributing
 As I'm just writing this to learn how editors works. I'm not gonna accept any pull requests. However, I'm open to critisizms so feel free to open an issue!
+
+Also the licience is in BSD 2-Clause (Simplified). so feel absolutely free to fork it and use it however you like :D
+
+* Versioning
+in order for me to track the progress of this project. the versioning format is going to be: =day.month.year=.
