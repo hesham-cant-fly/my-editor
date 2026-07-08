@@ -69,7 +69,7 @@ static void editor_draw_rows(void)
 static int editor_row_cx_to_rx(row_t *row, int cx)
 {
 	int rx = 0;
-	for (int i=0; i<cx; i+=1) {
+	for (int i=0; i<cx && (size_t)i < row->chars.len; i+=1) {
 		if (row->chars.data[i] == '\t') {
 			rx += (G.tabwidth - 1) - (rx % G.tabwidth);
 		}
@@ -86,12 +86,12 @@ static void editor_scroll(void) {
 	}
 
 	dim_t screen = get_screen_size();
-  if (G.cy < G.rowoff) {
-    G.rowoff = G.cy;
-  }
-  if (G.cy >= G.rowoff + screen.height) {
-    G.rowoff = G.cy - screen.height + 1;
-  }
+	if (G.cy < G.rowoff) {
+		G.rowoff = G.cy;
+	}
+	if (G.cy >= G.rowoff + screen.height) {
+		G.rowoff = G.cy - screen.height + 1;
+	}
 	if (G.rx < G.coloff) {
 		G.coloff = G.rx;
 	}
@@ -153,10 +153,11 @@ void editor_move_cursor_up(void)
 
 void editor_move_cursor_down(void)
 {
-	G.cy += 1;
-	if ((size_t)G.cy >= G.rows.len) {
-		G.cy = G.rows.len - 1;
+	if ((size_t)G.cy == G.rows.len) {
+		editor_set_message("{d} {usize}", G.cy, G.rows.len);
+		return;
 	}
+	G.cy += 1;
 	editor_refresh();
 }
 

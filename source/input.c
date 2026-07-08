@@ -9,56 +9,69 @@ void editor_process_key_press(void)
 
 	const int ch = getch();
 
-	if (ch == KEY_RESIZE) {
+	switch (ch) {
+	case KEY_RESIZE:
 		editor_refresh();
-	}
+		return;
 
-	if (ch == CTRL('q')) {
+	case CTRL('q'):
 		quit();
-	}
+		return;
 
-	if (ch == CTRL('a')) {
+	case CTRL('a'):
 		G.tabwidth += 1;
 		editor_refresh();
-	}
+		return;
 
-	if (ch == CTRL('e')) {
+	case CTRL('s'):
+		editor_save();
+		return;
+
+	case CTRL('e'):
 		G.tabwidth -= 1;
 		editor_refresh();
+		return;
 	}
 
+	row = current_row();
 	if (row == NULL) return;
 
-	if (ch == KEY_LEFT) {
+	switch (ch) {
+	case KEY_ENTER:
+	case '\r':
+	case '\n':
+		editor_insert_newline();
+		break;
+	case KEY_LEFT:
 		editor_move_cursor_left();
-	}
-
-	if (ch == KEY_RIGHT) {
+		break;
+	case KEY_RIGHT:
 		editor_move_cursor_right();
-	}
-
-	if (ch == KEY_DOWN) {
+		break;
+	case KEY_DOWN:
 		editor_move_cursor_down();
-	}
-
-	if (ch == KEY_UP) {
+		break;
+	case KEY_UP:
 		editor_move_cursor_up();
-	}
-
-	if (ch == KEY_HOME) {
+		break;
+	case KEY_HOME:
 		editor_set_cx(0);
-	}
-
-	if (ch == KEY_END) {
+		break;
+	case KEY_END:
 		editor_set_cx(row->chars.len - 1);
-	}
-
-	if (ch == KEY_PPAGE) {
+		break;
+	case KEY_PPAGE:
 		editor_set_cy(0);
-	}
-
-	if (ch == KEY_NPAGE) {
+		break;
+	case KEY_NPAGE:
 		editor_set_cy(G.rows.len - 1);
+		break;
+	case KEY_BACKSPACE:
+		editor_delete_char();
+		break;
+	default:
+		editor_insert_char(ch);
+		break;
 	}
 
 	row = current_row();

@@ -4824,7 +4824,7 @@ MY_SB_DEF void sb_push_cstr(string_builder_t *  self, const char *  cstr);
 /** @brief Append the contents of another string builder.
  *  @param self   Pointer to the destination.
  *  @param other  Pointer to the source string builder. */
-MY_SB_DEF void sb_push_string(string_builder_t *  self, const string_builder_t *  other);
+MY_SB_DEF void sb_push_string(string_builder_t *  self, const string_t other);
 
 #ifdef __cplusplus
 }
@@ -4999,18 +4999,18 @@ MY_SB_DEF void sb_push_cstr(string_builder_t *  self, const char *  cstr)
 	self->data[self->len] = '\0';
 }
 
-MY_SB_DEF void sb_push_string(string_builder_t *  self, const string_builder_t *  other)
+MY_SB_DEF void sb_push_string(string_builder_t *self, const string_t other)
 {
-	if (self->len + other->len >= self->cap) {
+	if (self->len + other.len >= self->cap) {
 		size_t newcap = self->cap * GROW_FACTOR;
-		if (self->len + other->len > newcap) {
-			newcap = self->len + other->len;
+		if (self->len + other.len > newcap) {
+			newcap = self->len + other.len;
 		}
 		sb_reserve(self, newcap);
 	}
 
-	memcpy(self->data + self->len, other->data, other->len);
-	self->len += other->len;
+	memcpy(self->data + self->len, other.data, other.len);
+	self->len += other.len;
 	self->data[self->len] = '\0';
 }
 
