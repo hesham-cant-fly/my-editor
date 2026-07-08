@@ -10,6 +10,10 @@ You might notice that the code in this repo is kinda different from what is in t
 ** First Screen Shot (6/7/2026)
 [[file:assets/Screen_Shots/2026-07-06_17-41-51_screenshot.png]]
 
+** Second Screen Shot (8/7/2026)
+I can implement the save-as feature but I'm too lazy
+[[file:assets/Screen_Shots/2026-07-08_12-14-52_screenshot.png]]
+
 * Building 
 This project use [[https://github.com/TomasBorquez/mate.h][mate.h]]. so building is extremely simple.
 #+begin_src bash
